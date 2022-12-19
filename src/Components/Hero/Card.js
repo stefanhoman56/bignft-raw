@@ -9,15 +9,13 @@ function Card() {
   const navigate = useNavigate();
 
   const gotoPresale = async () => {
-    if (account) {
-      navigate("/presale");
-    } else {
+    if (!account) {
       const success = await connectWallet();
-      if (success) {
-        navigate("/presale");
-      } else {
+      if (!success) {
+        // show error
       }
     }
+    navigate("/presale");
   }
 
   return (

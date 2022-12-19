@@ -22,11 +22,16 @@ function App() {
   const defaultProvider = new ethers.providers.JsonRpcProvider(BSCTestRPCUrl);
   const readContract = new ethers.Contract(ContractAddress, ContractABI, defaultProvider);
 
+  const [provider, setProvider] = useState(defaultProvider);
   const [account, setAccount] = useState();
   const [contract, setContract] = useState(readContract);
   const [connectError, setConnectError] = useState("");
 
   const connectWallet = async () => {
+    if (account) {
+      return
+    }
+
     try {
       let provider;
       try {
@@ -34,13 +39,14 @@ function App() {
       } catch (error) {
         return false;
       }
-      const library = new ethers.providers.Web3Provider(provider);
-      const accounts = await library.listAccounts();
+      provider = new ethers.providers.Web3Provider(provider);
+      const accounts = await provider.listAccounts();
       if (accounts)
         setAccount(accounts[0]);
 
-      const contract = new ethers.Contract(ContractAddress, ContractABI, library.getSigner());
+      const contract = new ethers.Contract(ContractAddress, ContractABI, provider.getSigner());
       setContract(contract);
+      setProvider(provider);
       return true;
     } catch (error) {
       if (error !== 'Modal closed by user') {
@@ -57,7 +63,7 @@ function App() {
   };
 
   return (
-    <UserContext.Provider value={{ account, contract, connectError, connectWallet, disconnectWallet }}>
+    <UserContext.Provider value={{ provider, account, contract, connectError, connectWallet, disconnectWallet }}>
       <Router>
         <Routes>
           <Route exact path="/" element={<Home />} />

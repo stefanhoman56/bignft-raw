@@ -1,9 +1,9 @@
 import { createContext } from "react";
 
 const UserContext = createContext({
+    provider: null,
     account: null,
-    // readContract: readContract,
-    userContract: null,
+    contract: null,
     connectError: "",
     connectWallet: null,
     disconnectWallet: null
