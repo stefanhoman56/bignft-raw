@@ -1,7 +1,8 @@
 import React from "react";
-import Clock from "../../assets/timer.png";
 import "./Presale.css";
 import Down from '../../assets/down.png'
+import CountDown from "../Common/CountDown";
+import ProgressBar from "../Common/ProgressBar";
 
 function PresaleCard() {
   return (
@@ -11,22 +12,9 @@ function PresaleCard() {
           <h1>BUY $BIGNFTS ON PRESALE</h1>
           <p className="symbol">1 $BIGNFTS = $1</p>
 
-          <div className="bar">
-            <div className="sub-bar"></div>
-          </div>
-          <p className="progress-1">
-            Progress <span className="pr-num">48%</span>(23,750,345/50,000,000)
-          </p>
+          <ProgressBar />
 
-          <div className="d-flex justify-content-center mt-10">
-            <img src={Clock} alt="" className="timer" />
-            <p className="count-down">
-              <span className="num">10</span> DAYS,{" "}
-              <span className="num">15</span> HOURS,{" "}
-              <span className="num">45</span> MINUTES,{" "}
-              <span className="num">10</span> SECONDS remaining
-            </p>
-          </div>
+          <CountDown />
           <div className="club">
             <div className="token-box">
               <h2>Select Payment Token</h2>
@@ -38,11 +26,11 @@ function PresaleCard() {
                     </p>
                     <select id="cars" name="cars">
                       <option value="volvo">Balance: 18,000 $IBAT</option>
-                    
+
                     </select>
                   </div>
                   <div className="text-center">
-                    <img src={Down} alt="" className="down"/>
+                    <img src={Down} alt="" className="down" />
 
                   </div>
                   <div className="d-flex sec-num">
@@ -54,7 +42,7 @@ function PresaleCard() {
                     />
                     <p className="num-p">$BIGNFT</p>
                   </div>
-                  
+
 
                   <div className="btn-modal">
                     <button
