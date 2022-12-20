@@ -156,3 +156,7 @@ select {
         grid-template-columns: repeat(1, auto);
       }
 }
+
+#cars option {
+  color: black
+}

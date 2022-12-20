@@ -2,7 +2,8 @@ import { useContext, useEffect, useState } from "react"
 import UserContext from "../../UserContext"
 
 const ProgressBar = () => {
-    const { contract } = useContext(UserContext)
+    const { contracts } = useContext(UserContext)
+    const contract = contracts.main
     const [total, setTotal] = useState(0)
     const [inSale, setInSale] = useState(0)
 

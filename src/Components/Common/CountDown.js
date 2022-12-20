@@ -3,7 +3,8 @@ import { useContext, useEffect, useState } from "react"
 import UserContext from "../../UserContext";
 
 const CountDown = () => {
-    const { contract } = useContext(UserContext)
+    const { contracts } = useContext(UserContext)
+    const contract = contracts.main
 
     const [timeRange, setTimeRange] = useState()
     const [currentTime, setCurrentTime] = useState()
@@ -45,7 +46,7 @@ const CountDown = () => {
                             <span className="num">{getRemainingTime().seconds}</span> SECONDS remaining
                         </>
                     ) : (
-                        <>It's already finished {timeRange.endTime}</>
+                        <>It's already finished </>
                     )
                 )}
 
