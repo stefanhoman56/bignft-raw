@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { GiHamburgerMenu } from "react-icons/gi";
 import Logo from '../../assets/logo2.png'
@@ -8,9 +8,15 @@ import UserContext from "../../UserContext";
 
 
 function Navbar() {
+  const navigate = useNavigate()
   const [showMediaIcons, setShowMediaIcons] = useState(false);
   const { connectWallet, disconnectWallet, account } = useContext(UserContext)
 
+  const disconnect = (e) => {
+    e.preventDefault()
+    disconnectWallet()
+    navigate("/")
+  }
 
   return (
     <>
@@ -46,7 +52,7 @@ function Navbar() {
             </li>
             <li>
               {account ? (
-                <NavLink onClick={disconnectWallet}>Disconnect Wallet</NavLink>
+                <NavLink onClick={disconnect}>Disconnect Wallet</NavLink>
               ) : (
                 <NavLink onClick={connectWallet}>Connect Wallet</NavLink>
               )}

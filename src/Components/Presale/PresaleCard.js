@@ -9,7 +9,6 @@ import { TokenList } from "../../Constants/Constants";
 
 function PresaleCard() {
   const { provider, contracts, account } = useContext(UserContext)
-  const mainContract = contracts.main
   const [balances, setBalances] = useState({ BNB: 0 })
   const tokenElement = useRef()
   const nftAmountElement = useRef()
@@ -31,7 +30,7 @@ function PresaleCard() {
       }
 
       const getTokenBalances = async (token) => {
-        console.log(token)
+        console.log(token, " getting balance")
         const balance = await contracts[token].balanceOf(account)
         const decimals = (await contracts[token].decimals()).toNumber()
         console.log("success")
@@ -61,25 +60,27 @@ function PresaleCard() {
     const token = tokenElement.current.value
     const nftAmount = nftAmountElement.current.value
 
-    const salePrice = await mainContract.salePrice()
     try {
       let transaction = null;
       if (token == "BNB") {
-        const bnbPrice = await mainContract.getBNBLatestPrice()
-        transaction = await mainContract.buyWithBNB(nftAmount, { value: salePrice.mul(nftAmount).div(bnbPrice) })
+        const bnbAmount = await contracts.Main.getBNBAmount(nftAmount)
+        console.log(bnbAmount)
+        transaction = await contracts.Main.buyWithBNB(nftAmount, { value: bnbAmount })
       } else if (token == "IBAT") {
-        const ibatPrice = await mainContract.getIBATLatestPrice()
-        await contracts.IBAT.approve(mainContract.address, salePrice.mul(nftAmount).div(ibatPrice))
-        transaction = await mainContract.buyWithIBAT(nftAmount)
+        const ibatAmount = await contracts.Main.getIBATAmount(nftAmount)
+        await contracts.IBAT.approve(contracts.Main.address, ibatAmount)
+        transaction = await contracts.Main.buyWithIBAT(nftAmount)
       } else {
-        await contracts[token].approve(mainContract.address, salePrice.mul(nftAmount))
-        transaction = await mainContract.buyWithUSD(nftAmount, TokenList.indexOf(token))
+        const tokenIndex = TokenList.indexOf(token)
+        const tokenAmount = await contracts.Main.getTokenAmount(nftAmount, tokenIndex)
+        await contracts[token].approve(contracts.Main.address, tokenAmount)
+        transaction = await contracts.Main.buyWithUSD(nftAmount, tokenIndex)
       }
       const tx_result = await transaction.wait()
       alert(`Successfully bought domain. TX: ${tx_result.transactionHash}`)
       console.log("transaction", tx_result.transactionHash)
     } catch (error) {
-      alert("Error occured during transaction. Please check the browser console.")
+      alert("Error occured during transaction. Please check the browser console.\n" + error.reason.data.message)
       console.error("Transaction Error:", error.reason)
     }
   }

@@ -1,10 +1,10 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { ContractFactory, ethers } from 'ethers';
-import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
+import { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Web3Modal from 'web3modal';
-import ContractABI, { BEP20ABI, BigNFTABI } from './Constants/ABI';
-import { BSCMainRPCUrl, BSCTestRPCUrl, BUSD_ADDRESS, DAI_ADDRESS, IBAT_ADDRESS, MainTokenAddress, providerOptions, TEST_MODE, USDC_ADDRESS, USDT_ADDRESS } from './Constants/Constants';
+import { BEP20ABI, BigNFTABI } from './Constants/ABI';
+import { ContractAddr, providerOptions, RPCUrl } from './Constants/Constants';
 import Home from './Pages/Home';
 import Sale from './Pages/Sale';
 import UserContext from './UserContext';
@@ -19,13 +19,13 @@ const web3Modal = new Web3Modal({
 // const readContract = new web3.eth.Contract(ContractABI, ContractAddress);
 
 function App() {
-  const defaultProvider = new ethers.providers.JsonRpcProvider(TEST_MODE ? BSCTestRPCUrl : BSCMainRPCUrl);
-  const readContract = new ethers.Contract(MainTokenAddress, BigNFTABI, defaultProvider);
+  const defaultProvider = new ethers.providers.JsonRpcProvider(RPCUrl);
+  const readContract = new ethers.Contract(ContractAddr.Main, BigNFTABI, defaultProvider);
 
   const [provider, setProvider] = useState(defaultProvider);
   const [account, setAccount] = useState();
   const [contracts, setContracts] = useState({
-    main: readContract
+    Main: readContract
   });
   const [connectError, setConnectError] = useState("");
 
@@ -42,19 +42,17 @@ function App() {
         return false;
       }
       provider = new ethers.providers.Web3Provider(provider);
+
+      const contracts = {}
+      for (const [token, address] of Object.entries(ContractAddr)) {
+        contracts[token] = new ethers.Contract(address, token == "Main" ? BigNFTABI : BEP20ABI, provider.getSigner())
+      }
+      setContracts(contracts);
+      setProvider(provider);
+
       const accounts = await provider.listAccounts();
       if (accounts)
         setAccount(accounts[0]);
-
-      setContracts({
-        main: new ethers.Contract(MainTokenAddress, BigNFTABI, provider.getSigner()),
-        USDT: new ethers.Contract(USDT_ADDRESS, BEP20ABI, provider.getSigner()),
-        USDC: new ethers.Contract(USDC_ADDRESS, BEP20ABI, provider.getSigner()),
-        BUSD: new ethers.Contract(BUSD_ADDRESS, BEP20ABI, provider.getSigner()),
-        DAI: new ethers.Contract(DAI_ADDRESS, BEP20ABI, provider.getSigner()),
-        IBAT: new ethers.Contract(IBAT_ADDRESS, BEP20ABI, provider.getSigner()),
-      });
-      setProvider(provider);
       return true;
     } catch (error) {
       if (error !== 'Modal closed by user') {

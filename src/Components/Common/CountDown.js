@@ -4,7 +4,7 @@ import UserContext from "../../UserContext";
 
 const CountDown = () => {
     const { contracts } = useContext(UserContext)
-    const contract = contracts.main
+    const contract = contracts.Main
 
     const [timeRange, setTimeRange] = useState()
     const [currentTime, setCurrentTime] = useState()
