@@ -252,7 +252,6 @@ function BuyToken({
       console.error(error);
       console.error(`dev-setMaxTokensPossibleToBuy crashed `);
     }
-    console.log("buyingCoin", buyingCoin)
     if (!e || e <= 0 || e === "null") {
       e = "0";
     }

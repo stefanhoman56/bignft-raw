@@ -4,7 +4,6 @@ import { ref, getDatabase } from "firebase/database";
 import { useObject } from "react-firebase-hooks/database";
 import { ABI_BATSPresale_MATIC, MATIC_NFT_CONTRACT_ADDRESS, PolygonMainRPCUrl, TOTAL_AMOUNT_TO_RAISE } from "../CONTRACT_DETAILS";
 import { ethers } from 'ethers';
-import { wait } from "@testing-library/react";
 import { async } from "@firebase/util";
 import { useEffect } from "react";
 import { AstPath } from "prettier";
@@ -57,7 +56,7 @@ function ProgressBar2({ isLargerThan500, firebaseApp, currentPhase }) {
             {!tokensSold_loading &&
               tokensSold &&
               `$${Number(tokensSold.val()).toLocaleString()} `}
-            /{` $${supply}`})
+            /{` $${TOTAL_AMOUNT_TO_RAISE.total}`})
           </Text>
         </Flex>
       </Flex>

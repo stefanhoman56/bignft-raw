@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import "./styles/App.scss";
 import { useMoralis, useWeb3ExecuteFunction, useChain } from "react-moralis";
-import { ABI_BIGNFT, NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE, NFT_TOKEN_DECIMALS, ABI_BATSPresale_MATIC, MATIC_NFT_CONTRACT_ADDRESS } from "./CONTRACT_DETAILS";
+import { ABI_BIGNFT, NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE, NFT_TOKEN_DECIMALS, ABI_BATSPresale_MATIC, MATIC_NFT_CONTRACT_ADDRESS, BSCMainRPCUrl } from "./CONTRACT_DETAILS";
 
 import Header from "./components/Header";
 import Main from "./components/Main";
@@ -13,7 +13,7 @@ import { ethers } from 'ethers';
 
 // FIREBASE - START
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, refFromURL, update } from "firebase/database"; //to update value of tokensSold
+import { getDatabase, ref, update } from "firebase/database"; //to update value of tokensSold
 import { useObject } from "react-firebase-hooks/database";
 
 // import { getAnalytics } from "firebase/analytics";
@@ -213,40 +213,56 @@ function App() {
     console.log(`💩💩💩 ${smartContract} 💩💩💩`);
     const totalToRaiseInCurrentPhase = amountToRaise;
 
-    const fnName = "inSaleUSDvalue";
-    let options = {
-      abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
-      contractAddress: smartContract,
-      functionName: fnName,
-    };
-    console.log('*****', smartContract, amountToRaise, phaseNum);
+    const defaultProvider = new ethers.providers.JsonRpcProvider(chainId === "0x89" ? PolygonMainRPCUrl : BSCMainRPCUrl);
+    const readContract = new ethers.Contract(smartContract, chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT, defaultProvider);
+
+    console.log('CHCH', phaseNum, chainId);
     let amountRaised = 0;
-    await fetch({
-      params: options,
-      onSuccess: (data) => {
-        const amountLeftToRaiseInCurrentPhase = Number(data._hex);
-        console.log(`👹 amountLeftToRaiseInCurrentPhase - ${phaseNum} - ${(amountLeftToRaiseInCurrentPhase / Math.pow(10, 18)).toFixed(2)} 👹`);
+    try {
+      const res = await readContract.inSaleUSDvalue();
+  
+      const amountLeftToRaiseInCurrentPhase = (res["_hex"]);
+      amountRaised = totalToRaiseInCurrentPhase - (amountLeftToRaiseInCurrentPhase / Math.pow(10, NFT_TOKEN_DECIMALS)).toFixed(2);
+    } catch (error) {
+      console.error(error);
+    }
+    // const res = 1;
 
-        amountRaised = totalToRaiseInCurrentPhase - (amountLeftToRaiseInCurrentPhase / Math.pow(10, NFT_TOKEN_DECIMALS)).toFixed(2);
+    // const fnName = "inSaleUSDvalue";
+    // let options = {
+    //   abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
+    //   contractAddress: smartContract,
+    //   functionName: fnName,
+    // };
+    // console.log('*****', smartContract, amountToRaise, phaseNum);
+    // let amountRaised = 0;
+    // await fetch({
+    //   params: options,
+    //   onSuccess: (data) => {
+    //     const amountLeftToRaiseInCurrentPhase = Number(data._hex);
+    //     console.log(`👹 amountLeftToRaiseInCurrentPhase - ${phaseNum} - ${(amountLeftToRaiseInCurrentPhase / Math.pow(10, 18)).toFixed(2)} 👹`);
 
-        // console.log(`🪙🪙🪙 amountRaised - ${amountRaised} - ${phaseNum} 🪙🪙`);
-        console.log(amountRaised);
-      },
-      onError: (err) => {
-        console.error(err);
-        console.error(`dev-❌failed to getTotalBIGNFTSold`);
-      },
-    });
+    //     amountRaised = totalToRaiseInCurrentPhase - (amountLeftToRaiseInCurrentPhase / Math.pow(10, NFT_TOKEN_DECIMALS)).toFixed(2);
+
+    //     // console.log(`🪙🪙🪙 amountRaised - ${amountRaised} - ${phaseNum} 🪙🪙`);
+    //     console.log(amountRaised);
+    //   },
+    //   onError: (err) => {
+    //     console.error(err);
+    //     console.error(`dev-❌failed to getTotalBIGNFTSold`);
+    //   },
+    // });
     return amountRaised;
-
   }, [fetch, chainId]);
 
   const getTotalAmountRaised = useCallback(async () => {
     let totalAmountRaised = 0;
+    console.log('UUUU', chainId, currentPhase, totalAmountRaised);
     for (let i = 1; i <= 3; i++) {
       if (i === 1) {
         let phase1Raised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE[currentPhase], TOTAL_AMOUNT_TO_RAISE.phase1, "phase1");
         totalAmountRaised += phase1Raised;
+        console.log('UUUU', chainId, currentPhase, totalAmountRaised);
         updateInDB("/raisedInPhase/1", `${phase1Raised}`);
         // updateInDB("phase1Raised", `${phase1Raised}`);
         if (phase1Raised !== 0) {
@@ -256,6 +272,7 @@ function App() {
       }
       else if (i === 2) {
         let phase2Raised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE["2"], TOTAL_AMOUNT_TO_RAISE.phase2, "phase2");
+        console.log('UUUU', chainId, currentPhase, totalAmountRaised);
         totalAmountRaised += phase2Raised;
         updateInDB("/raisedInPhase/2", `${phase2Raised}`);
         if (phase2Raised !== 0) {
@@ -265,6 +282,7 @@ function App() {
       }
       else if (i === 3) {
         let phase3Raised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE["3"], TOTAL_AMOUNT_TO_RAISE.phase3, "phase3");
+        console.log('UUUU', chainId, currentPhase, totalAmountRaised);
         totalAmountRaised += phase3Raised;
         updateInDB("/raisedInPhase/3", `${phase3Raised}`);
         if (phase3Raised !== 0) {
@@ -280,12 +298,12 @@ function App() {
     setTotalAmountRaised(totalAmountRaised);
     updateInDB("tokensSold", `${totalAmountRaised}`)
 
-  }, [updateInDB, reRender, getAmountRaised, currentPhase]);
+  }, [updateInDB, reRender, currentPhase]);
 
-  useEffect(() => {
-    if (!isWeb3Enabled) return;
-    getTotalAmountRaised();
-  }, [isWeb3Enabled, getTotalAmountRaised])
+  // useEffect(() => {
+  //   if (!isWeb3Enabled) return;
+  //   getTotalAmountRaised();
+  // }, [isWeb3Enabled, getTotalAmountRaised])
   /**
    * END
    * Checking how many tokens are left for sale
@@ -304,7 +322,7 @@ function App() {
   const updateProgressBar = useCallback(() => {
     console.log(`reRender[${reRender}] changed, so updating values - (updateProgressBar).`);
 
-    let percentage = ((totalAmountRaised / supply) * 100).toFixed(1);
+    let percentage = ((totalAmountRaised / TOTAL_AMOUNT_TO_RAISE.total) * 100).toFixed(1);
 
     updateInDB("presaleProgressBar", percentage)
   }, [updateInDB, totalAmountRaised, reRender]);
