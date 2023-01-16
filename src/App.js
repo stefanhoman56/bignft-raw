@@ -220,6 +220,7 @@ function App() {
     let amountRaised = 0;
     try {
       const res = await readContract.inSaleUSDvalue();
+      console.log("========================", phaseNum, amountToRaise, res)
   
       const amountLeftToRaiseInCurrentPhase = (res["_hex"]);
       amountRaised = totalToRaiseInCurrentPhase - (amountLeftToRaiseInCurrentPhase / Math.pow(10, NFT_TOKEN_DECIMALS)).toFixed(2);
@@ -300,10 +301,10 @@ function App() {
 
   }, [updateInDB, reRender, currentPhase]);
 
-  // useEffect(() => {
-  //   if (!isWeb3Enabled) return;
-  //   getTotalAmountRaised();
-  // }, [isWeb3Enabled, getTotalAmountRaised])
+  useEffect(() => {
+    if (!isWeb3Enabled) return;
+    getTotalAmountRaised();
+  }, [isWeb3Enabled, getTotalAmountRaised])
   /**
    * END
    * Checking how many tokens are left for sale

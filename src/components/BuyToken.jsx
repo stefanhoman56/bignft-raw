@@ -291,9 +291,10 @@ function BuyToken({
       // console.log(typeof e);
       // console.log(e);
       // console.log(`🥵🥵🥵🥵🥵`);
-      e = Moralis.Units.FromWei(`${e}`, "18");
       if (buyingCoin === "USDT")
         e = Moralis.Units.FromWei(`${e}`, "6");
+      else
+        e = Moralis.Units.FromWei(`${e}`, "18");
       e = Number(e).toFixed(3) + "";
       e = parseInt(e) + "";
       maxBATSPurchsePossible = parseInt(e / BatsPrice);
