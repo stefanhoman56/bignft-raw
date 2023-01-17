@@ -4,9 +4,9 @@ import CoinSelector from "./CoinSelector";
 import InputAmount from "./InputAmount";
 import {
   NFT_CONTRACT_ADDRESS_PHASE,
-  MATIC_NFT_CONTRACT_ADDRESS,
+  ETH_NFT_CONTRACT_ADDRESS,
   ABI_BIGNFT,
-  ABI_BATSPresale_MATIC,
+  ABI_BATSPresale_ETH,
   NFT_TOKEN_SYMBOL,
   IBAT_HARDCAP_IN_USD,
   BIGNFT_PRICE_USD_PHASE_ONE,
@@ -14,9 +14,9 @@ import {
   BIGNFT_PRICE_USD_PHASE_THREE,
   BUYING_WITH_IBAT_DISCOUNT,
   SLIPPAGE_FOR_BNB,
-  SLIPPAGE_FOR_MATIC
+  SLIPPAGE_FOR_ETH
 } from "../CONTRACT_DETAILS";
-import { BSC_COINS_SUPPORTED } from "../COINS_SUPPORTED";
+import { BSC_COINS_SUPPORTED, ETH_COINS_SUPPORTED } from "../COINS_SUPPORTED";
 import { useState, useCallback, useEffect } from "react";
 import {
   useMoralis,
@@ -58,12 +58,12 @@ function BuyToken({
    * calculates if Hardcap of amount raised with IBAT is completed or not
    */
   const USDRaisedWithIBAT = useCallback(async () => {
-    if (chainId === "0x89")
+    if (chainId === "0x1")
       return;
     const fnName = "totalIBATUSDvalueSold";
     let options = {
       abi: ABI_BIGNFT,
-      contractAddress: NFT_CONTRACT_ADDRESS_PHASE[currentPhase],
+      contractAddress: NFT_CONTRACT_ADDRESS_PHASE,
       functionName: fnName,
     };
     await bigFetch({
@@ -101,9 +101,9 @@ function BuyToken({
   const [bigNFTBalance, setBigNFTBalance] = useState("0");
 
   useEffect(() => {
-    console.log("chainId", chainId);
-    if (chainId === "0x89")
-      setBuyingCoin("MATIC");
+    // console.log("chainId", chainId);
+    if (chainId === "0x1")
+      setBuyingCoin("ETH");
     else
       setBuyingCoin("BNB");
     // alert('a');
@@ -116,7 +116,7 @@ function BuyToken({
       console.error(`dev-not authenticated`);
       return;
     }
-    if (token === "BNB" || token === "MATIC") {
+    if (token === "BNB" || token === "ETH") {
       return nativeBalance.balance;
     } else {
       tempCoin = allBalances.filter((c) => {
@@ -167,19 +167,21 @@ function BuyToken({
    */
 
   const getTokenPriceInUSD = useCallback(async () => {
-    if (!buyingCoin || !BSC_COINS_SUPPORTED) return;
+    if (!buyingCoin || !BSC_COINS_SUPPORTED || !ETH_COINS_SUPPORTED) return;
     let c = buyingCoin;
 
     let fnName = `get${buyingCoin}LatestPrice`;
-    if (chainId === "0x89")
+    if (chainId === "0x1")
       fnName = 'getBNBLatestPrice';
     // const decimals =
     //   "" + BSC_COINS_SUPPORTED.filter((e) => e.symbol === c)[0].decimal;
-    const decimals = buyingCoin === "IBAT" ? 9 : 18; // BNB & IBAT
+    let decimals = buyingCoin === "IBAT" ? 9 : 18; // BNB & IBAT
+    if (buyingCoin === "USDT")
+      decimals = 6;
 
     let options = {
-      abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
-      contractAddress: chainId === "0x89" ? MATIC_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE[currentPhase],
+      abi: chainId === "0x1" ? ABI_BATSPresale_ETH : ABI_BIGNFT,
+      contractAddress: chainId === "0x1" ? ETH_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE,
       functionName: fnName,
     };
     let userTokenBalInWei = getTokenBalanceInWei(buyingCoin);
@@ -210,12 +212,13 @@ function BuyToken({
 
         if (c === "IBAT") {
           // IBAT
-          USDEqu = data._hex ? `${Number(data._hex)}` : "0";
+          // USDEqu = data._hex ? `${Number(data._hex)}` : "0";
+          USDEqu = data._hex || "0";
           USDEqu = Moralis.Units.FromWei(USDEqu, "18"); // return value is in USDT so - 18 decimals
           // console.log(`USDEqu - ${USDEqu}`);
           // console.log(`👻 ${c} cost - ${Math.round(USDEqu)}`);
         } else {
-          coinPrice = Moralis.Units.FromWei(`${Number(data._hex)}`, decimals);
+          coinPrice = Moralis.Units.FromWei(data._hex, decimals);
           USDEqu = coinPrice * userTokenBal;
         }
         USDEqu = Number(USDEqu).toFixed(2);
@@ -232,7 +235,7 @@ function BuyToken({
     });
     // console.log(`👻 ${c} price = ${coinPrice} - ${USDEqu}`);
     return USDEqu;
-  }, [bigFetch, buyingCoin, currentPhase, getTokenBalanceInWei, chainId]);
+  }, [bigFetch, buyingCoin, getTokenBalanceInWei, chainId]);
 
   /**
    * END
@@ -263,7 +266,7 @@ function BuyToken({
     } else if (currentPhase === "3") {
       BatsPrice = BIGNFT_PRICE_USD_PHASE_THREE;
     }
-    if (buyingCoin === "IBAT" || buyingCoin === "BNB" || buyingCoin === "MATIC") {
+    if (buyingCoin === "IBAT" || buyingCoin === "BNB" || buyingCoin === "ETH") {
       let buyingCoinPriceInUSD = await getTokenPriceInUSD();
       // @todo calculate IBAT price
       // console.log(buyingCoinPriceInUSD);
@@ -276,9 +279,9 @@ function BuyToken({
           buyingCoinPriceInUSD / (SLIPPAGE_FOR_BNB * BatsPrice);
         maxBATSPurchsePossible = parseInt(preSlippagePrice);
       } // maxBATSPurchsePossible = maxBATSPurchsePossible / BatsPrice;
-      else if (buyingCoin === "MATIC") {
+      else if (buyingCoin === "ETH") {
         let preSlippagePrice =
-          buyingCoinPriceInUSD / (SLIPPAGE_FOR_MATIC * BatsPrice);
+          buyingCoinPriceInUSD / (SLIPPAGE_FOR_ETH * BatsPrice);
         maxBATSPurchsePossible = parseInt(preSlippagePrice);
       }
     } else if (
@@ -329,7 +332,7 @@ function BuyToken({
 
 
       let options = {
-        abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
+        abi: chainId === "0x1" ? ABI_BATSPresale_ETH : ABI_BIGNFT,
         contractAddress: contractAdd,
         functionName: fnName,
         params: {
@@ -360,17 +363,17 @@ function BuyToken({
 
   const getBigNFTBalance = useCallback(async () => {
     if (!isWeb3Enabled || !user) return;
-    console.log(
-      `reRender[${reRender}] changed, so updating values(getBigNFTBalance)`
-    );
+    // console.log(
+    //   `reRender[${reRender}] changed, so updating values(getBigNFTBalance)`
+    // );
 
     let bal = 0;
-    if (chainId === "0x89")
-      bal += Number(await getBalanceFromContract(MATIC_NFT_CONTRACT_ADDRESS));
+    if (chainId === "0x1")
+      bal += Number(await getBalanceFromContract(ETH_NFT_CONTRACT_ADDRESS));
     else {
-      bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE[1]));
-      bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE[2]));
-      bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE[3]));
+      bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE));
+      // bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE[2]));
+      // bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE[3]));
     }
     bal += "";
     // console.log(`🤡🤡🤡`);

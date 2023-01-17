@@ -1,7 +1,7 @@
 import { Button, Badge, Text, Flex } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { useWeb3ExecuteFunction, useMoralis, useChain } from "react-moralis";
-import { BSC_COINS_SUPPORTED, POLYGON_COINS_SUPPORTED } from "../COINS_SUPPORTED";
+import { BSC_COINS_SUPPORTED, ETH_COINS_SUPPORTED } from "../COINS_SUPPORTED";
 import {
   NFT_CONTRACT_ADDRESS_PHASE,
   ABI_BIGNFT,
@@ -10,9 +10,9 @@ import {
   BUYING_WITH_IBAT_DISCOUNT,
   NFT_TOKEN_SYMBOL,
   MIN_BUYING_AMOUNT,
-  ABI_BATSPresale_MATIC,
-  MATIC_NFT_CONTRACT_ADDRESS,
-  SLIPPAGE_FOR_MATIC,
+  ETH_NFT_CONTRACT_ADDRESS,
+  ABI_BATSPresale_ETH,
+  SLIPPAGE_FOR_ETH,
 } from "../CONTRACT_DETAILS";
 import { Moralis } from "moralis-v1";
 
@@ -60,8 +60,8 @@ function BuyButton({
       amount: bigNFTAmount,
     };
     let options = {
-      abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
-      contractAddress: chainId === "0x89" ? MATIC_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE[currentPhase],
+      abi: chainId === "0x1" ? ABI_BATSPresale_ETH : ABI_BIGNFT,
+      contractAddress: chainId === "0x1" ? ETH_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE,
       functionName: fnName,
       params: buyParams,
     };
@@ -73,8 +73,8 @@ function BuyButton({
         msgValue: Moralis.Units.ETH(`${BNBValueForBIGNFT}`),
         functionName: "buyWithBNB",
       };
-    } else if (buyingCoin === "MATIC") {
-      console.log(`Bought ${bigNFTAmount} BIGNFTs, w/ MATIC`);
+    } else if (buyingCoin === "ETH") {
+      console.log(`Bought ${bigNFTAmount} BIGNFTs, w/ ETH`);
 
       options = {
         ...options,
@@ -163,7 +163,6 @@ function BuyButton({
     showErrToast,
     showInfoToast,
     setReRender,
-    currentPhase,
     chainId
   ]);
 
@@ -171,18 +170,18 @@ function BuyButton({
     let tokenToEnable = `${coin.toUpperCase()}`;
     console.log(`enableAllowance-`);
     console.log(tokenToEnable);
-    if (chainId === "0x89") {
+    if (chainId === "0x1") {
       console.log("yooo")
-      let ABI_approve = POLYGON_COINS_SUPPORTED.filter(
+      let ABI_approve = ETH_COINS_SUPPORTED.filter(
         (e) => e.symbol.toUpperCase() === tokenToEnable
       )[0].ABI_approve;
       // console.log(ABI_approve);
-      let tokenToEnableAllowanceContractAddress = POLYGON_COINS_SUPPORTED.filter(
+      let tokenToEnableAllowanceContractAddress = ETH_COINS_SUPPORTED.filter(
         (e) => e.symbol.toUpperCase() === tokenToEnable
       )[0].bscContractAddress;
 
 
-      let contractAddressToAllow = MATIC_NFT_CONTRACT_ADDRESS;
+      let contractAddressToAllow = ETH_NFT_CONTRACT_ADDRESS;
       let optionsApprove = {
         abi: ABI_approve,
         contractAddress: tokenToEnableAllowanceContractAddress,
@@ -248,7 +247,7 @@ function BuyButton({
       )[0].bscContractAddress;
 
 
-      let contractAddressToAllow = NFT_CONTRACT_ADDRESS_PHASE[currentPhase];
+      let contractAddressToAllow = NFT_CONTRACT_ADDRESS_PHASE;
       let optionsApprove = {
         abi: ABI_approve,
         contractAddress: tokenToEnableAllowanceContractAddress,
@@ -304,7 +303,6 @@ function BuyButton({
     }
   }, [
     bigFetch,
-    currentPhase,
     coin,
     reRender,
     setReRender,
@@ -332,14 +330,14 @@ function BuyButton({
     }
 
     let fnName = "getIBATAmount";
-    if (c === "BNB" || c === "MATIC") {
+    if (c === "BNB" || c === "ETH") {
       fnName = "getBNBAmount";
       // @todo - add refresh - price updates after couple of seconds
     }
     let buyingPrice = 0;
     let options = {
-      abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
-      contractAddress: chainId === "0x89" ? MATIC_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE[currentPhase],
+      abi: chainId === "0x1" ? ABI_BATSPresale_ETH : ABI_BIGNFT,
+      contractAddress: chainId === "0x1" ? ETH_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE,
       functionName: fnName,
       params: {
         amount: bigNFTAmount,
@@ -359,8 +357,8 @@ function BuyButton({
         if (c === "BNB") {
           buyingPrice = Number(tx._hex) * SLIPPAGE_FOR_BNB + "";
         }
-        else if (c === "MATIC") {
-          buyingPrice = Number(tx._hex) * SLIPPAGE_FOR_MATIC + "";
+        else if (c === "ETH") {
+          buyingPrice = Number(tx._hex) * SLIPPAGE_FOR_ETH + "";
         }
 
         // console.log(buyingPrice);
@@ -371,7 +369,7 @@ function BuyButton({
         console.log("buyingPrice", buyingPrice)
         buyingPrice = Moralis.Units.FromWei(buyingPrice, decimals);
         buyingPrice = Number(buyingPrice).toFixed(3) + "";
-        if (c === "BNB" || c === "MATIC") {
+        if (c === "BNB" || c === "ETH") {
           try {
             setBNBValueForBIGNFT(buyingPrice);
           } catch (error) {
@@ -392,7 +390,7 @@ function BuyButton({
     // if(c.toUpperCase() === "IBAT"){
 
     // }
-  }, [coin, bigNFTAmount, currentPhase, bigFetch, chainId]);
+  }, [coin, bigNFTAmount, bigFetch, chainId]);
 
   // calls the setMaxSold everytime the amount of BATTLESQUAD to buy changes
   useEffect(() => {
@@ -415,8 +413,8 @@ function BuyButton({
     let fnName = "getBNBLatestPrice";
 
     let options = {
-      abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
-      contractAddress: chainId === "0x89" ? MATIC_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE[currentPhase],
+      abi: chainId === "0x1" ? ABI_BATSPresale_ETH : ABI_BIGNFT,
+      contractAddress: chainId === "0x1" ? ETH_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE,
       functionName: fnName,
     };
     if (c === "IBAT") {
@@ -447,19 +445,19 @@ function BuyButton({
       params: options,
       onSuccess: (data) => {
         if (!data) return;
+        console.log("getLatestPrice===============", data)
 
         let decimals = c === "IBAT" ? "9" : "18";
         let USDEqu = "0";
-        if (c === "BNB" || c === "MATIC") {
+        if (c === "BNB" || c === "ETH") {
           let coinPrice = Moralis.Units.FromWei(
-            `${Number(data._hex)}`,
+            data._hex,
             decimals
           );
-          // console.log(`👻 ${c} price = ${coinPrice} - ${Number(data._hex)}`);
           USDEqu = coinPrice * maxSold;
         } else {
           // IBAT
-          USDEqu = data._hex ? `${Number(data._hex)}` : "0";
+          USDEqu = data._hex || "0";
           USDEqu = Moralis.Units.FromWei(USDEqu, "18"); // return value is in USDT so - 18 decimals
           // console.log(`👻 ${c} cost - ${Math.round(USDEqu)}`);
         }
@@ -476,7 +474,7 @@ function BuyButton({
         console.error(`dev-failed getLatestPrice of token - ${fnName}`);
       },
     });
-  }, [coin, bigFetch, maxSold, currentPhase, chainId]);
+  }, [coin, bigFetch, maxSold, chainId]);
 
   //  update price
   useEffect(() => {
@@ -525,14 +523,14 @@ function BuyButton({
         <Text fontSize={"x-small"}>Max Sold</Text>
         <Text fontSize={"x-small"} textAlign="right">
           {maxSold} {coin}{" "}
-          {(coin + "").toUpperCase() === "BNB" || (coin + "").toUpperCase() === "MATIC"
+          {(coin + "").toUpperCase() === "BNB" || (coin + "").toUpperCase() === "ETH"
             ? `(${parseFloat(
               ((SLIPPAGE_FOR_BNB - 1) * 100).toFixed(2)
             )}% SLIPPAGE)`
             : ""}{" "}
           <br />
           {(coin + "").toUpperCase() === "BNB" ||
-            (coin + "").toUpperCase() === "MATIC" ||
+            (coin + "").toUpperCase() === "ETH" ||
             (coin + "").toUpperCase() === "IBAT"
             ? `$${Number(USDEquivalent)}`
             : ""}

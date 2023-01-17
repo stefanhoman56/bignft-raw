@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import iconDropDown from "../assets/dropdown.svg";
 import { BSC_COINS_SUPPORTED } from "../COINS_SUPPORTED";
-import { POLYGON_COINS_SUPPORTED } from "../COINS_SUPPORTED";
+import { ETH_COINS_SUPPORTED } from "../COINS_SUPPORTED";
 import { useEffect, useState } from "react";
 import { useChain } from "react-moralis";
 
@@ -27,7 +27,7 @@ function CoinSelector({
   const { chainId } = useChain();
 
   const getSupportedCoins = () => {
-    return chainId === "0x89" ? POLYGON_COINS_SUPPORTED : BSC_COINS_SUPPORTED;
+    return chainId === "0x1" ? ETH_COINS_SUPPORTED : BSC_COINS_SUPPORTED;
   }
 
   const getCurrentCoin = () => {
@@ -51,7 +51,7 @@ function CoinSelector({
       isAuthenticated &&
       !isLoadingERC20Balances &&
       allBalances &&
-      coin !== "BNB" && coin !== "MATIC"
+      coin !== "BNB" && coin !== "ETH"
     ) {
       let tempCoin = allBalances.filter((c) => {
         let symbol = c.symbol + "";

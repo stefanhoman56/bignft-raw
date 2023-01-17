@@ -1,12 +1,11 @@
 import { Flex, Text } from "@chakra-ui/react";
-import React, { useCallback } from "react";
+import React from "react";
 import { ref, getDatabase } from "firebase/database";
 import { useObject } from "react-firebase-hooks/database";
-import { ABI_BATSPresale_MATIC, MATIC_NFT_CONTRACT_ADDRESS, PolygonMainRPCUrl, TOTAL_AMOUNT_TO_RAISE } from "../CONTRACT_DETAILS";
-import { ethers } from 'ethers';
-import { async } from "@firebase/util";
-import { useEffect } from "react";
-import { AstPath } from "prettier";
+import { TOTAL_AMOUNT_TO_RAISE } from "../CONTRACT_DETAILS";
+//import { ethers } from 'ethers';
+//import { async } from "@firebase/util";
+//import { useEffect } from "react";
 
 function ProgressBar2({ isLargerThan500, firebaseApp, currentPhase }) {
   const database = getDatabase(firebaseApp);
@@ -14,7 +13,7 @@ function ProgressBar2({ isLargerThan500, firebaseApp, currentPhase }) {
   const realtimeDBValProgressBar = "presaleProgressBar";
   const realtimeDBValTokensSold = "tokensSold";
 
-  const [supply, setSupply] = React.useState();
+  // const [supply, setSupply] = React.useState();
 
   const [progressBarVal, progressBarVal_loading] = useObject(
     ref(database, realtimeDBValProgressBar)
@@ -23,12 +22,14 @@ function ProgressBar2({ isLargerThan500, firebaseApp, currentPhase }) {
     ref(database, realtimeDBValTokensSold)
   );
 
-  const defaultProvider = new ethers.providers.JsonRpcProvider(PolygonMainRPCUrl);
-  const readContract = new ethers.Contract(MATIC_NFT_CONTRACT_ADDRESS, ABI_BATSPresale_MATIC, defaultProvider);
-  useEffect(async () => {
-    const res = await readContract.totalTokensForPresale();
-    setSupply(Number(res["_hex"]) + TOTAL_AMOUNT_TO_RAISE.total);
-  }, [])
+  // const defaultProvider = new ethers.providers.JsonRpcProvider(ETHMainRPCUrl);
+  // const readContract = new ethers.Contract(ETH_NFT_CONTRACT_ADDRESS, ABI_BATSPresale_ETH, defaultProvider);
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     const res = await readContract.totalTokensForPresale();
+  //     setSupply(Number(res["_hex"]) + TOTAL_AMOUNT_TO_RAISE.total);
+  //   }
+  // }, [])
 
   return (
     <>

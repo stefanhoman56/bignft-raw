@@ -161,7 +161,7 @@ function ConnectWalletDrawer({ addClass, login }) {
                           <Text fontSize="xs" pb="0.5rem">
                             Connected Chain
                             {/* {console.log(`chainId : ${chainId}`)} */}
-                            {(chainId !== "0x38" && chainId !== "0x89") ? (
+                            {(chainId !== "0x38" && chainId !== "0x1") ? (
                               <Badge mx="0.5rem" px=".5rem" colorScheme={"red"}>
                                 Wrong Chain
                               </Badge>
@@ -189,7 +189,7 @@ function ConnectWalletDrawer({ addClass, login }) {
                               </Button>
                             </>
                           )}
-                          {chainId !== "0x89" && (
+                          {chainId !== "0x1" && (
                             <>
                               <Button
                                 marginLeft="0px !important"
@@ -198,9 +198,9 @@ function ConnectWalletDrawer({ addClass, login }) {
                                 px="2rem"
                                 py="1.5rem"
                                 justifyContent="space-between"
-                                onClick={() => switchChain("0x89")}
+                                onClick={() => switchChain("0x1")}
                               >
-                                Switch to Polygon Mainnet
+                                Switch to Ethereum Mainnet
                               </Button>
                             </>
                           )}

@@ -216,7 +216,7 @@ function Hero({
     const fnName = "buyIBAT";
     let options = {
       abi: ABI_BIGNFT,
-      contractAddress: NFT_CONTRACT_ADDRESS_PHASE[currentPhase],
+      contractAddress: NFT_CONTRACT_ADDRESS_PHASE,
       functionName: fnName,
       msgValue: Moralis.Units.ETH(`${BNBAmountForBuyingIBAT}`),
     };
@@ -273,7 +273,6 @@ function Hero({
   }, [
     BNBAmountForBuyingIBAT,
     bigFetch,
-    currentPhase,
     onClose,
     reRender,
     setNativeValue,
@@ -349,8 +348,8 @@ function Hero({
             ? currentPhase === "1"
               ? BIGNFT_PRICE_USD_PHASE_ONE
               : currentPhase === "2"
-              ? BIGNFT_PRICE_USD_PHASE_TWO
-              : BIGNFT_PRICE_USD_PHASE_THREE
+                ? BIGNFT_PRICE_USD_PHASE_TWO
+                : BIGNFT_PRICE_USD_PHASE_THREE
             : "..."}
         </Text>
         <Text
