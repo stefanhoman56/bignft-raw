@@ -31,10 +31,10 @@ export const NFT_TOKEN_DECIMALS = 18;
 export const NFT_TOKEN_SYMBOL = "$BATS";
 export const TOTAL_AMOUNT_TO_RAISE = isTestnet
   ? {
-    phase1: 60,
-    phase2: 70,
-    phase3: 70,
-    total: 200,
+    phase1: 10,
+    phase2: 30,
+    phase3: 60,
+    total: 60,
   }
   : {
     phase1: 3000000,

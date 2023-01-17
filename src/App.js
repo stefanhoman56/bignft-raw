@@ -211,7 +211,7 @@ function App() {
 
   }, [db]);
 
-  const getAmountRaised = useCallback(async (smartContract, amountToRaise, phaseNum) => {
+  const getAmountRaised = useCallback(async (smartContract, amountToRaise) => {
     // console.log(`💩💩💩 ${smartContract} 💩💩💩`);
     const totalToRaiseInCurrentPhase = amountToRaise;
 
@@ -223,12 +223,12 @@ function App() {
     let amountRaised = 0;
     try {
       const res = await readContract.inSaleUSDvalue();
-      // console.log("========================", phaseNum, amountToRaise, res)
+      console.log("========================", amountToRaise, res)
 
-      const amountLeftToRaiseInCurrentPhase = (res["_hex"]);
-      amountRaised = totalToRaiseInCurrentPhase - (amountLeftToRaiseInCurrentPhase / Math.pow(10, NFT_TOKEN_DECIMALS)).toFixed(2);
+      amountRaised = totalToRaiseInCurrentPhase - Moralis.Units.FromWei(res._hex, NFT_TOKEN_DECIMALS);
+      console.log("========================amountRaised", amountToRaise, amountRaised)
     } catch (error) {
-      console.log('bError', phaseNum, readContract);
+      console.log('bError', readContract);
       console.error(error);
     }
     // const res = 1;
@@ -296,16 +296,26 @@ function App() {
     //     console.log(`phase3 -  ${phase3Raised} !== ${phase3Raised !== 0}`);
     //   }
     // }
-    // console.log('=-', currentPhase);
-    const phaseRaised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE[Object.keys(TOTAL_AMOUNT_TO_RAISE).at(currentPhase)], currentPhase);
-    // console.log("*(", currentPhase);
+
+    // const phaseRaised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE[Object.keys(TOTAL_AMOUNT_TO_RAISE).at(currentPhase)], currentPhase) +
+    const phaseRaised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE.total) +
+      await getAmountRaised(ETH_NFT_CONTRACT_ADDRESS, TOTAL_AMOUNT_TO_RAISE.total);
 
     totalAmountRaised += phaseRaised;
+    
     updateInDB(`/raisedInPhase/${currentPhase}`, `${phaseRaised}`);
     console.log(`/raisedInPhase/${currentPhase}`, `${phaseRaised}`);
-    // totalAmountRaised += await getAmountRaised(ETH_NFT_CONTRACT_ADDRESS, TOTAL_AMOUNT_TO_RAISE.phase1, "phase1");
     // console.log(`🔵 totalAmountRaised - ${totalAmountRaised} 🔵`);
     // console.log(`reRender[${reRender}] changed, so updating values - (getTotalAmountRaised).`);
+
+    if (totalAmountRaised < TOTAL_AMOUNT_TO_RAISE.phase1) {
+      updateInDB("currentPhase", "1");
+    } else if (totalAmountRaised < TOTAL_AMOUNT_TO_RAISE.phase2) {
+      updateInDB("currentPhase", "2");
+    } else {
+      updateInDB("currentPhase", "3");
+    }
+    
 
     setTotalAmountRaised(totalAmountRaised);
     updateInDB("tokensSold", `${totalAmountRaised}`)
