@@ -14,7 +14,9 @@ import {
   BIGNFT_PRICE_USD_PHASE_THREE,
   BUYING_WITH_IBAT_DISCOUNT,
   SLIPPAGE_FOR_BNB,
-  SLIPPAGE_FOR_ETH
+  SLIPPAGE_FOR_ETH,
+  BSCMainRPCUrl,
+  ETHMainRPCUrl
 } from "../CONTRACT_DETAILS";
 import { BSC_COINS_SUPPORTED, ETH_COINS_SUPPORTED } from "../COINS_SUPPORTED";
 import { useState, useCallback, useEffect } from "react";
@@ -26,6 +28,7 @@ import {
   useWeb3ExecuteFunction,
 } from "react-moralis";
 import { Moralis } from "moralis-v1";
+import { ethers } from 'ethers';
 
 function BuyToken({
   toast,
@@ -326,61 +329,26 @@ function BuyToken({
   ]);
 
   const getBalanceFromContract = useCallback(
-    async (contractAdd) => {
-      let fnName = "userDeposits";
-      let userAddress = user.get("ethAddress");
+    async (chainId) => {
+      const userAddress = user.get("ethAddress");
+      const isEther = chainId == "0x1";
 
+      const defaultProvider = new ethers.providers.JsonRpcProvider(isEther ? ETHMainRPCUrl : BSCMainRPCUrl);
+      const readContract = new ethers.Contract(isEther ? ETH_NFT_CONTRACT_ADDRESS : NFT_CONTRACT_ADDRESS_PHASE, isEther ? ABI_BATSPresale_ETH : ABI_BIGNFT, defaultProvider);
 
-      let options = {
-        abi: chainId === "0x1" ? ABI_BATSPresale_ETH : ABI_BIGNFT,
-        contractAddress: contractAdd,
-        functionName: fnName,
-        params: {
-          "": userAddress,
-        },
-      };
-
-      let bal = 0;
-      await bigFetch({
-        params: options,
-        onSuccess: (tx) => {
-          if (tx) {
-            bal = Number(tx._hex) + "";
-            bal = Moralis.Units.FromWei(bal, 18);
-            bal = Number(bal).toFixed(3) + "";
-            bal = parseInt(bal) + "";
-          }
-        },
-        onError: (err) => {
-          console.error(err);
-          console.error(`dev-failed get bignftbalance - ${fnName}`);
-        },
-      });
-      return bal;
+      return readContract.userDeposits(userAddress);
     },
-    [bigFetch, user, chainId]
+    [user]
   );
 
   const getBigNFTBalance = useCallback(async () => {
     if (!isWeb3Enabled || !user) return;
-    // console.log(
-    //   `reRender[${reRender}] changed, so updating values(getBigNFTBalance)`
-    // );
 
     let bal = 0;
-    if (chainId === "0x1")
-      bal += Number(await getBalanceFromContract(ETH_NFT_CONTRACT_ADDRESS));
-    else {
-      bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE));
-      // bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE[2]));
-      // bal += Number(await getBalanceFromContract(NFT_CONTRACT_ADDRESS_PHASE[3]));
-    }
+    bal += Number(await getBalanceFromContract("0x1"));
+    bal += Number(await getBalanceFromContract("0x38"));
     bal += "";
-    // console.log(`🤡🤡🤡`);
-    // console.log(typeof bal);
-    // console.log(`bal - ${bal}`);
-    // console.log(`🤡🤡🤡`);
-    setBigNFTBalance(bal);
+    setBigNFTBalance(Moralis.Units.FromWei(bal, 18));
   }, [isWeb3Enabled, user, reRender, getBalanceFromContract, chainId]);
 
   useEffect(() => {

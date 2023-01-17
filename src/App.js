@@ -212,102 +212,28 @@ function App() {
   }, [db]);
 
   const getAmountRaised = useCallback(async (smartContract, amountToRaise) => {
-    // console.log(`💩💩💩 ${smartContract} 💩💩💩`);
     const totalToRaiseInCurrentPhase = amountToRaise;
 
     const defaultProvider = new ethers.providers.JsonRpcProvider(smartContract === ETH_NFT_CONTRACT_ADDRESS ? ETHMainRPCUrl : BSCMainRPCUrl);
-    // console.log(chainId);
     const readContract = new ethers.Contract(smartContract, smartContract === ETH_NFT_CONTRACT_ADDRESS ? ABI_BATSPresale_ETH : ABI_BIGNFT, defaultProvider);
 
-    // console.log('CHCH', phaseNum, chainId);
     let amountRaised = 0;
     try {
       const res = await readContract.inSaleUSDvalue();
-      console.log("========================", amountToRaise, res)
-
       amountRaised = totalToRaiseInCurrentPhase - Moralis.Units.FromWei(res._hex, NFT_TOKEN_DECIMALS);
-      console.log("========================amountRaised", amountToRaise, amountRaised)
     } catch (error) {
       console.log('bError', readContract);
       console.error(error);
     }
-    // const res = 1;
-
-    // const fnName = "inSaleUSDvalue";
-    // let options = {
-    //   abi: chainId === "0x89" ? ABI_BATSPresale_MATIC : ABI_BIGNFT,
-    //   contractAddress: smartContract,
-    //   functionName: fnName,
-    // };
-    // console.log('*****', smartContract, amountToRaise, phaseNum);
-    // let amountRaised = 0;
-    // await fetch({
-    //   params: options,
-    //   onSuccess: (data) => {
-    //     const amountLeftToRaiseInCurrentPhase = Number(data._hex);
-    //     console.log(`👹 amountLeftToRaiseInCurrentPhase - ${phaseNum} - ${(amountLeftToRaiseInCurrentPhase / Math.pow(10, 18)).toFixed(2)} 👹`);
-
-    //     amountRaised = totalToRaiseInCurrentPhase - (amountLeftToRaiseInCurrentPhase / Math.pow(10, NFT_TOKEN_DECIMALS)).toFixed(2);
-
-    //     // console.log(`🪙🪙🪙 amountRaised - ${amountRaised} - ${phaseNum} 🪙🪙`);
-    //     console.log(amountRaised);
-    //   },
-    //   onError: (err) => {
-    //     console.error(err);
-    //     console.error(`dev-❌failed to getTotalBIGNFTSold`);
-    //   },
-    // });
     return amountRaised;
   }, [chainId]);
 
   const getTotalAmountRaised = useCallback(async () => {
     let totalAmountRaised = 0;
-    // console.log('UUUU', chainId, currentPhase, totalAmountRaised);
-    // for (let i = 1; i <= 3; i++) {
-    //   if (i === 1) {
-    //     let phase1Raised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE.phase1, "phase1");
-    //     totalAmountRaised += phase1Raised;
-    //     console.log('UUUU', chainId, currentPhase, totalAmountRaised);
-    //     updateInDB("/raisedInPhase/1", `${phase1Raised}`);
-    //     // updateInDB("phase1Raised", `${phase1Raised}`);
-    //     if (phase1Raised !== 0) {
-    //       updateInDB("currentPhase", "1");
-    //     }
-    //     console.log(`phase1 - ${phase1Raised} !== ${phase1Raised !== 0}`);
-    //   }
-    //   else if (i === 2) {
-    //     let phase2Raised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE.phase2, "phase2");
-    //     console.log('UUUU', chainId, currentPhase, totalAmountRaised);
-    //     totalAmountRaised += phase2Raised;
-    //     updateInDB("/raisedInPhase/2", `${phase2Raised}`);
-    //     if (phase2Raised !== 0) {
-    //       updateInDB("currentPhase", "2")
-    //     }
-    //     console.log(`phase2 - ${phase2Raised} !== ${phase2Raised !== 0}`);
-    //   }
-    //   else if (i === 3) {
-    //     let phase3Raised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE.phase3, "phase3");
-    //     console.log('UUUU', chainId, currentPhase, totalAmountRaised);
-    //     totalAmountRaised += phase3Raised;
-    //     updateInDB("/raisedInPhase/3", `${phase3Raised}`);
-    //     if (phase3Raised !== 0) {
-    //       updateInDB("currentPhase", "3");
-    //     }
-    //     console.log(`phase3 -  ${phase3Raised} !== ${phase3Raised !== 0}`);
-    //   }
-    // }
-
-    // const phaseRaised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE[Object.keys(TOTAL_AMOUNT_TO_RAISE).at(currentPhase)], currentPhase) +
     const phaseRaised = await getAmountRaised(NFT_CONTRACT_ADDRESS_PHASE, TOTAL_AMOUNT_TO_RAISE.total) +
       await getAmountRaised(ETH_NFT_CONTRACT_ADDRESS, TOTAL_AMOUNT_TO_RAISE.total);
-
+      
     totalAmountRaised += phaseRaised;
-    
-    updateInDB(`/raisedInPhase/${currentPhase}`, `${phaseRaised}`);
-    console.log(`/raisedInPhase/${currentPhase}`, `${phaseRaised}`);
-    // console.log(`🔵 totalAmountRaised - ${totalAmountRaised} 🔵`);
-    // console.log(`reRender[${reRender}] changed, so updating values - (getTotalAmountRaised).`);
-
     if (totalAmountRaised < TOTAL_AMOUNT_TO_RAISE.phase1) {
       updateInDB("currentPhase", "1");
     } else if (totalAmountRaised < TOTAL_AMOUNT_TO_RAISE.phase2) {
@@ -315,11 +241,10 @@ function App() {
     } else {
       updateInDB("currentPhase", "3");
     }
-    
-
-    setTotalAmountRaised(totalAmountRaised);
+      
+    updateInDB(`/raisedInPhase/${currentPhase}`, `${phaseRaised}`);
     updateInDB("tokensSold", `${totalAmountRaised}`)
-
+    setTotalAmountRaised(totalAmountRaised);
   }, [updateInDB, reRender, currentPhase, chainId]);
 
   useEffect(() => {

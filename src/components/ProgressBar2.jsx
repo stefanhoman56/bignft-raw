@@ -56,7 +56,7 @@ function ProgressBar2({ isLargerThan500, firebaseApp, currentPhase }) {
             (
             {!tokensSold_loading &&
               tokensSold &&
-              `$${Number(tokensSold.val()).toLocaleString()} `}
+              `$${Number(tokensSold.val()).toFixed(2).toLocaleString()} `}
             /{` $${TOTAL_AMOUNT_TO_RAISE.total}`})
           </Text>
         </Flex>

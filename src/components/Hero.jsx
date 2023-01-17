@@ -336,7 +336,7 @@ function Hero({
           fontSize={".8rem"}
           fontFamily={"Russo One"}
         >
-          SOLD -{` $${raisedInCurrentPhase}`}
+          SOLD -{` $${Number(raisedInCurrentPhase).toFixed(2)}`}
         </Text>
         <Text
           as="h2"
